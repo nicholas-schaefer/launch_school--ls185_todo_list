@@ -8,5 +8,9 @@ gem "rackup", "~> 2.1"
 gem "pg"
 gem "pry"
 
+group :production do
+  gem "puma"
+end
+
 ruby "3.3.5"
 
