@@ -19,14 +19,20 @@ class DatabasePersistence
     SQL
     result = query(sql, id)
     tuple = result.first
-    {id: tuple["id"], name: tuple["name"], todos: [] }
+
+    list_id = tuple["id"].to_i
+    todos = find_todos_for_list(list_id)
+    {id: list_id, name: tuple["name"], todos: todos }
   end
 
   def all_lists
     sql = "SELECT * FROM lists;"
     result = query(sql)
+
     result.map do |tuple|
-      {id: tuple["id"], name: tuple["name"], todos: [] }
+      list_id = tuple["id"].to_i
+      todos = find_todos_for_list(list_id)
+      {id: list_id, name: tuple["name"], todos: todos }
     end
     # @session[:lists]
   end
@@ -69,4 +75,18 @@ class DatabasePersistence
     # end
   end
 
+  private
+  def find_todos_for_list(list_id)
+    todo_sql= <<~SQL
+      SELECT * FROM todos
+      WHERE list_id = $1;
+    SQL
+    todos_result = query(todo_sql, list_id)
+
+    todos = todos_result.map do |todo_tuple|
+      { id: todo_tuple["id"].to_i,
+        name: todo_tuple["name"],
+        completed: todo_tuple["completed"] == "t" }
+    end
+  end
 end
