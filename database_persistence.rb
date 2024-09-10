@@ -34,21 +34,37 @@ class DatabasePersistence
       todos = find_todos_for_list(list_id)
       {id: list_id, name: tuple["name"], todos: todos }
     end
-    # @session[:lists]
   end
 
   def create_new_list(list_name)
-    # id = next_element_id(@session[:lists])
-    # @session[:lists] << { id: id, name: list_name, todos: [] }
+    sql = <<~SQL
+      INSERT INTO lists (name)
+        VALUES ($1);
+    SQL
+    query(sql, list_name)
   end
 
   def delete_list(id)
-    # @session[:lists].reject! { |list| list[:id] == id }
+    delete_todos_sql = <<~SQL
+      DELETE FROM todos
+      WHERE list_id = $1;
+    SQL
+    delete_lists_sql = <<~SQL
+      DELETE FROM lists
+      WHERE id = $1;
+    SQL
+    query(delete_todos_sql, id)
+    query(delete_lists_sql, id)
   end
 
   def update_list_name(id, new_name)
-    # list = find_list(id)
-    # list[:name] = new_name
+    sql = <<~SQL
+      UPDATE lists
+      SET name = $1
+      WHERE id = $2;
+    SQL
+
+    query(sql, new_name, id)
   end
 
   def create_new_todo(list_id, todo_name)
